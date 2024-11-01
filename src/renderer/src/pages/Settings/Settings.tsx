@@ -1,57 +1,67 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from "react";
 
-import { DevModeContext } from '@/contexts/DevModeContext.js'
-import { ModalContext } from '@/contexts/ModalContext.js'
+// Import context voor ontwikkelaarsmodus en modalen
+import { DevModeContext } from "@/contexts/DevModeContext.js";
+import { ModalContext } from "@/contexts/ModalContext.js";
 
-import Switch from '@/components/Switch/Switch.js'
+// Import de Switch component voor toggle instellingen
+import Switch from "@/components/Switch/Switch.js";
 
-import styles from './Settings.module.css'
+import styles from "./Settings.module.css";
 
-import icon from '@/assets/icon.png'
+import icon from "@/assets/icon.png";
 
+// Enum voor de verschillende tabbladen in de instellingen
 enum Tab {
   General,
   Appearance,
   Startup,
   Advanced,
-  About
+  About,
 }
 
+// Hoofdcomponent voor instellingen
 const Settings: React.FC = () => {
-  const { settingsOpen, setSettingsOpen } = useContext(ModalContext)
-  const { devMode } = useContext(DevModeContext)
+  const { settingsOpen, setSettingsOpen } = useContext(ModalContext); // Haal modal context op
+  const { devMode } = useContext(DevModeContext); // Haal ontwikkelaarsmodus context op
 
-  const [currentTab, setCurrentTab] = useState<Tab>(Tab.General)
+  const [currentTab, setCurrentTab] = useState<Tab>(Tab.General); // Standaard tabblad is 'General'
 
+  // Sluit de instellingen als er buiten de modal wordt geklikt
   function onClickBackground(e: React.MouseEvent<HTMLDivElement>) {
-    if (e.target === e.currentTarget) setSettingsOpen(false)
+    if (e.target === e.currentTarget) setSettingsOpen(false);
   }
 
+  // Reset het huidige tabblad naar 'General' als de instellingen gesloten worden
   useEffect(() => {
     if (!settingsOpen && currentTab !== Tab.General) {
-      setTimeout(() => setCurrentTab(Tab.General), 200)
+      setTimeout(() => setCurrentTab(Tab.General), 200); // Vertraagd om het afsluiten mooi te maken
     }
-  }, [settingsOpen, currentTab])
+  }, [settingsOpen, currentTab]);
 
+  // Forceer het huidige tabblad naar 'General' als devMode uitgeschakeld is
   useEffect(() => {
-    if (!devMode && currentTab === Tab.Advanced) setCurrentTab(Tab.General)
-  })
+    if (!devMode && currentTab === Tab.Advanced) setCurrentTab(Tab.General);
+  });
 
   return (
     <div
       className={styles.settings}
-      data-open={settingsOpen}
+      data-open={settingsOpen} // Voor styling of animaties
       onClick={onClickBackground}
     >
       <div className={styles.box}>
         <h2>
           Settings
           <button onClick={() => setSettingsOpen(false)}>
+            {" "}
+            {/* Sluit de instellingen */}
             <span className="material-icons">close</span>
           </button>
         </h2>
         <div className={styles.content}>
           <div className={styles.tabs}>
+            {/* Tabs voor navigatie tussen instellingen */}
             <button
               onClick={() => setCurrentTab(Tab.General)}
               data-active={currentTab === Tab.General}
@@ -73,7 +83,7 @@ const Settings: React.FC = () => {
               <span className="material-icons">security</span>
               Startup
             </button>
-            {devMode ? (
+            {devMode ? ( // Toon tab alleen als devMode aan is
               <button
                 onClick={() => setCurrentTab(Tab.Advanced)}
                 data-active={currentTab === Tab.Advanced}
@@ -91,6 +101,7 @@ const Settings: React.FC = () => {
             </button>
           </div>
           <div className={styles.tab}>
+            {/* Render de juiste tab op basis van het huidige tabblad */}
             {currentTab === Tab.General ? (
               <GeneralTab />
             ) : currentTab === Tab.Appearance ? (
@@ -106,15 +117,16 @@ const Settings: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
+// Toggle instelling component
 const ToggleSetting: React.FC<{
-  label: string
-  description?: string
-  defaultValue?: boolean
-  value?: boolean
-  onChange: (value: boolean) => void
+  label: string;
+  description?: string;
+  defaultValue?: boolean;
+  value?: boolean;
+  onChange: (value: boolean) => void;
 }> = ({ label, description, defaultValue, value, onChange }) => {
   return (
     <div className={styles.toggleSetting}>
@@ -122,24 +134,21 @@ const ToggleSetting: React.FC<{
         <p className={styles.label}>{label}</p>
         <p className={styles.description}>{description}</p>
       </div>
-      <Switch
-        defaultValue={defaultValue}
-        value={value}
-        onChange={onChange}
-      />
+      <Switch defaultValue={defaultValue} value={value} onChange={onChange} />
     </div>
-  )
-}
+  );
+};
 
+// Input met een submit functie voor instellingen
 const InputWithSubmitSetting: React.FC<{
-  label: string
-  description?: string
-  defaultValue?: string
-  value?: string
-  submitLabel?: string
-  onSubmit: (value: string) => void
-  password?: boolean
-  disabled?: boolean
+  label: string;
+  description?: string;
+  defaultValue?: string;
+  value?: string;
+  submitLabel?: string;
+  onSubmit: (value: string) => void;
+  password?: boolean;
+  disabled?: boolean;
 }> = ({
   label,
   description,
@@ -147,9 +156,9 @@ const InputWithSubmitSetting: React.FC<{
   submitLabel,
   onSubmit,
   password,
-  disabled
+  disabled,
 }) => {
-  const value = useRef('')
+  const value = useRef(""); // Gebruik useRef voor de input waarde
 
   return (
     <div className={styles.inputWithSubmitSetting}>
@@ -159,74 +168,78 @@ const InputWithSubmitSetting: React.FC<{
       </div>
       <div className={styles.form}>
         <input
-          type={password ? 'password' : 'text'}
+          type={password ? "password" : "text"}
           defaultValue={defaultValue}
           disabled={disabled}
-          onChange={e => (value.current = e.target.value)}
+          onChange={(e) => (value.current = e.target.value)} // Update de waarde bij invoer
         />
         <button
           disabled={disabled}
-          onClick={() => onSubmit(value.current || '')}
+          onClick={() => onSubmit(value.current || "")} // Roep de submit functie aan
         >
-          {submitLabel || 'Submit'}
+          {submitLabel || "Submit"}
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
+// Enum voor de Spotify status
 enum SpotifyStatus {
   Loading,
   Pending,
   Valid,
-  Invalid
+  Invalid,
 }
 
+// Tabblad voor algemene instellingen
 const GeneralTab: React.FC = () => {
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(false); // Laadstatus
   const [spotifyStatus, setSpotifyStatus] = useState<SpotifyStatus>(
-    SpotifyStatus.Pending
-  )
+    SpotifyStatus.Pending // Begin met de status Pending
+  );
 
   const settings = useRef<{
-    installAutomatically?: boolean
-    sp_dc?: string
-  }>({})
+    installAutomatically?: boolean;
+    sp_dc?: string;
+  }>({});
 
+  // Laad instellingen bij het opstarten van de tab
   useEffect(() => {
     async function loadSettings() {
       settings.current = {
         installAutomatically:
-          (await window.api.getStorageValue('installAutomatically')) ===
-          true
-      }
-      setLoaded(true)
+          (await window.api.getStorageValue("installAutomatically")) === true,
+      };
+      setLoaded(true); // Markeer als geladen
     }
 
-    loadSettings()
-  }, [])
+    loadSettings();
+  }, []);
 
+  // Handelt wijzigingen aan de Spotify-token
   async function handleSpotifyTokenChange(token: string) {
-    setSpotifyStatus(SpotifyStatus.Loading)
-    if (!token) return setSpotifyStatus(SpotifyStatus.Invalid)
-    const res = await window.api.setSpotifyToken(token)
+    setSpotifyStatus(SpotifyStatus.Loading); // Zet de status op Loading
+    if (!token) return setSpotifyStatus(SpotifyStatus.Invalid); // Als geen token, markeer als Invalid
+    const res = await window.api.setSpotifyToken(token);
 
+    // Controleer de respons van de API
     if (res === false) {
-      setSpotifyStatus(SpotifyStatus.Invalid)
+      setSpotifyStatus(SpotifyStatus.Invalid); // Markeer als Invalid
     } else {
-      setSpotifyStatus(SpotifyStatus.Valid)
+      setSpotifyStatus(SpotifyStatus.Valid); // Markeer als Valid
     }
   }
 
   return (
-    loaded && (
+    loaded && ( // Render alleen als geladen
       <div className={styles.settingsTab}>
         <ToggleSetting
           label="Install Automatically"
           description="Automatically installs the web app to the CarThing when it is connected."
           defaultValue={settings.current.installAutomatically ?? false}
-          onChange={value =>
-            window.api.setStorageValue('installAutomatically', value)
+          onChange={
+            (value) => window.api.setStorageValue("installAutomatically", value) // Update de instelling
           }
         />
         <InputWithSubmitSetting
@@ -239,61 +252,64 @@ const GeneralTab: React.FC = () => {
           submitLabel="Change"
         />
         {spotifyStatus === SpotifyStatus.Invalid ? (
-          <p className={styles.error}>Invalid Spotify token</p>
+          <p className={styles.error}>Invalid Spotify token</p> // Foutmelding
         ) : spotifyStatus === SpotifyStatus.Valid ? (
-          <p className={styles.success}>Token saved!</p>
+          <p className={styles.success}>Token saved!</p> // Succesbericht
         ) : null}
       </div>
     )
-  )
-}
+  );
+};
 
+// Tabblad voor uiterlijk instellingen
 const AppearanceTab: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(true)
+  const [darkMode, setDarkMode] = useState(true); // Start met donkere modus ingeschakeld
 
+  // Reset de donkere modus na uitschakeling
   useEffect(() => {
     if (darkMode === false) {
       setTimeout(() => {
-        setDarkMode(true)
-      }, 100)
+        setDarkMode(true);
+      }, 100);
     }
-  }, [darkMode])
+  }, [darkMode]);
 
   return (
     <div className={styles.settingsTab}>
       <ToggleSetting
         label="Dark mode"
         description={
-          darkMode ? 'Enable dark mode for the app.' : 'sike u thought'
+          darkMode ? "Enable dark mode for the app." : "sike u thought"
         }
         value={darkMode}
-        onChange={value => setDarkMode(value)}
+        onChange={(value) => setDarkMode(value)}
       />
     </div>
-  )
-}
+  );
+};
 
+// Tabblad voor opstartinstellingen
 const StartupTab: React.FC = () => {
-  const [loaded, setLoaded] = useState(false)
+  const [loaded, setLoaded] = useState(false);
   const settings = useRef<{
-    launchOnStartup?: boolean
-    launchMinimized?: boolean
-    installOnStartup?: boolean
-  }>({})
+    launchOnStartup?: boolean;
+    launchMinimized?: boolean;
+    installOnStartup?: boolean;
+  }>({});
 
   useEffect(() => {
     async function loadSettings() {
       settings.current = {
         launchOnStartup:
-          (await window.api.getStorageValue('launchOnStartup')) === true,
+          (await window.api.getStorageValue("launchOnStartup")) === true,
         launchMinimized:
-          (await window.api.getStorageValue('launchMinimized')) === true
-      }
-      setLoaded(true)
+          (await window.api.getStorageValue("launchMinimized")) === true,
+      };
+      setLoaded(true);
     }
 
-    loadSettings()
-  }, [])
+    loadSettings();
+  }, []);
 
   return (
     loaded && (
@@ -302,41 +318,42 @@ const StartupTab: React.FC = () => {
           label="Launch on startup"
           description="Starts the app when you log in. This will also start the server."
           defaultValue={settings.current.launchOnStartup ?? false}
-          onChange={value =>
-            window.api.setStorageValue('launchOnStartup', value)
+          onChange={(value) =>
+            window.api.setStorageValue("launchOnStartup", value)
           }
         />
         <ToggleSetting
           label="Launch minimized"
           description="Starts the app minimized in the system tray."
           defaultValue={settings.current.launchMinimized ?? false}
-          onChange={value =>
-            window.api.setStorageValue('launchMinimized', value)
+          onChange={(value) =>
+            window.api.setStorageValue("launchMinimized", value)
           }
         />
       </div>
     )
-  )
-}
+  );
+};
 
+// Tabblad voor geavanceerde instellingen
 const AdvancedTab: React.FC = () => {
-  const { setDevMode } = useContext(DevModeContext)
-  const [loaded, setLoaded] = useState(false)
+  const { setDevMode } = useContext(DevModeContext);
+  const [loaded, setLoaded] = useState(false);
   const settings = useRef<{
-    disableSocketAuth?: boolean
-  }>({})
+    disableSocketAuth?: boolean;
+  }>({});
 
   useEffect(() => {
     async function loadSettings() {
       settings.current = {
         disableSocketAuth:
-          (await window.api.getStorageValue('disableSocketAuth')) === true
-      }
-      setLoaded(true)
+          (await window.api.getStorageValue("disableSocketAuth")) === true,
+      };
+      setLoaded(true);
     }
 
-    loadSettings()
-  }, [])
+    loadSettings();
+  }, []);
 
   return (
     loaded && (
@@ -351,31 +368,32 @@ const AdvancedTab: React.FC = () => {
           label="Disable WebSocket Authentication"
           description="Allows connections to the WebSocket server without authentication."
           defaultValue={settings.current.disableSocketAuth ?? false}
-          onChange={value =>
-            window.api.setStorageValue('disableSocketAuth', value)
+          onChange={(value) =>
+            window.api.setStorageValue("disableSocketAuth", value)
           }
         />
       </div>
     )
-  )
-}
+  );
+};
 
+// Tabblad voor informatie over de app
 const AboutTab: React.FC = () => {
-  const { devMode, setDevMode } = useContext(DevModeContext)
-  const [version, setVersion] = useState<string | null>(null)
-  const [timesClicked, setTimesClicked] = useState(0)
+  const { devMode, setDevMode } = useContext(DevModeContext); // Haal context voor ontwikkelaarsmodus
+  const [version, setVersion] = useState<string | null>(null);
+  const [timesClicked, setTimesClicked] = useState(0); // Houd het aantal klikken bij
 
   useEffect(() => {
-    window.api.getVersion().then(setVersion)
-  }, [])
+    window.api.getVersion().then(setVersion);
+  }, []);
 
   useEffect(() => {
-    if (timesClicked <= 0) return
+    if (timesClicked <= 0) return;
 
-    if (devMode) return
+    if (devMode) return;
 
-    if (timesClicked >= 5) setDevMode(true)
-  }, [timesClicked])
+    if (timesClicked >= 5) setDevMode(true);
+  }, [timesClicked]);
 
   return (
     <div className={styles.aboutTab}>
@@ -384,7 +402,7 @@ const AboutTab: React.FC = () => {
         <div className={styles.info}>
           <h2>GlanceThing</h2>
           <p
-            onClick={() => setTimesClicked(t => (t += 1))}
+            onClick={() => setTimesClicked((t) => (t += 1))}
             className={styles.version}
           >
             Version {version}
@@ -418,7 +436,7 @@ const AboutTab: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Settings
+export default Settings;

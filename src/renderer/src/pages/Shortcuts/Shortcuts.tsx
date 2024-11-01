@@ -1,88 +1,96 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from "react";
 
-import { ModalContext } from '@/contexts/ModalContext.js'
+// Import context voor modalen
+import { ModalContext } from "@/contexts/ModalContext.js";
 
-import styles from './Shortcuts.module.css'
+import styles from "./Shortcuts.module.css";
 
+// Interface voor de snelkoppeling
 interface Shortcut {
-  id: string
-  command: string
+  id: string;
+  command: string;
 }
 
 const Shortcuts: React.FC = () => {
+  // Gebruik de context voor het openen en sluiten van de shortcut editor
   const { shortcutsEditorOpen, setShortcutsEditorOpen } =
-    useContext(ModalContext)
-  const uploadImageRef = useRef<HTMLImageElement>(null)
+    useContext(ModalContext);
+  const uploadImageRef = useRef<HTMLImageElement>(null);
 
+  // Sluit de editor bij klikken buiten het editor-venster
   function onClickBackground(e: React.MouseEvent<HTMLDivElement>) {
     if (e.target === e.currentTarget) {
-      setShortcutsEditorOpen(false)
+      setShortcutsEditorOpen(false);
     }
   }
 
-  const [shortcuts, setShortcuts] = useState<Shortcut[] | null>(null)
+  const [shortcuts, setShortcuts] = useState<Shortcut[] | null>(null); // Snelkoppelingen ophalen en beheren
 
-  const [adding, setAdding] = useState<boolean>(false)
-  const [newShortcutCommand, setNewShortcutCommand] = useState<string>('')
+  const [adding, setAdding] = useState<boolean>(false); // Modal voor nieuwe shortcut toevoegen
+  const [newShortcutCommand, setNewShortcutCommand] = useState<string>(""); // Nieuw commando voor shortcut
 
-  const [editing, setEditing] = useState<boolean>(false)
+  const [editing, setEditing] = useState<boolean>(false); // Modal voor shortcut bewerken
   const [editingShortcut, setEditingShortcut] = useState<Shortcut>({
-    id: '',
-    command: ''
-  })
+    id: "",
+    command: "",
+  });
 
+  // Haal bestaande snelkoppelingen op bij laden van de component
   useEffect(() => {
-    window.api.getShortcuts().then(shortcuts => {
-      setShortcuts(shortcuts)
-    })
-  }, [])
+    window.api.getShortcuts().then((shortcuts) => {
+      setShortcuts(shortcuts);
+    });
+  }, []);
 
+  // Voeg een nieuwe snelkoppeling toe
   async function addShortcut(command: string) {
-    if (!command) return
+    if (!command) return;
 
-    const id = crypto.randomUUID()
+    const id = crypto.randomUUID(); // Genereer uniek ID voor de snelkoppeling
 
     const shortcut: Shortcut = {
       id,
-      command
-    }
+      command,
+    };
 
-    await window.api.addShortcut(shortcut)
+    await window.api.addShortcut(shortcut);
 
-    setShortcuts(shortcuts => [...(shortcuts || []), shortcut])
+    setShortcuts((shortcuts) => [...(shortcuts || []), shortcut]); // Voeg toe aan de lijst
 
-    setAdding(false)
-    setNewShortcutCommand('')
-    uploadImageRef.current!.src = ''
+    setAdding(false);
+    setNewShortcutCommand("");
+    uploadImageRef.current!.src = "";
   }
 
+  // Verwijder een snelkoppeling
   async function removeShortcut(id: string) {
-    await window.api.removeShortcut(id)
+    await window.api.removeShortcut(id);
 
     setShortcuts(
-      shortcuts => shortcuts && shortcuts.filter(s => s.id !== id)
-    )
+      (shortcuts) => shortcuts && shortcuts.filter((s) => s.id !== id) // Filter verwijderde snelkoppeling uit de lijst
+    );
 
-    setEditing(false)
+    setEditing(false);
   }
 
+  // Werk een bestaande snelkoppeling bij
   async function updateShortcut(shortcut: Shortcut) {
-    await window.api.updateShortcut(shortcut)
+    await window.api.updateShortcut(shortcut);
 
     setShortcuts(
-      shortcuts =>
-        shortcuts &&
-        shortcuts.map(s => (s.id === shortcut.id ? shortcut : s))
-    )
+      (shortcuts) =>
+        shortcuts && shortcuts.map((s) => (s.id === shortcut.id ? shortcut : s))
+    );
 
-    setEditing(false)
+    setEditing(false);
   }
 
+  // Sluit de modal voor het toevoegen van een shortcut
   async function handleAddShortcutClose() {
-    window.api.removeNewShortcutImage()
-    setAdding(false)
-    setNewShortcutCommand('')
-    uploadImageRef.current!.src = ''
+    window.api.removeNewShortcutImage();
+    setAdding(false);
+    setNewShortcutCommand("");
+    uploadImageRef.current!.src = "";
   }
 
   return (
@@ -91,20 +99,22 @@ const Shortcuts: React.FC = () => {
       data-open={shortcutsEditorOpen}
       onClick={onClickBackground}
     >
+      {/* Weergave van bestaande snelkoppelingen */}
       {shortcuts ? (
         <div className={styles.grid}>
-          {shortcuts.map(shortcut => (
+          {shortcuts.map((shortcut) => (
             <div
               className={styles.shortcut}
               key={shortcut.id}
               onClick={() => {
-                setEditing(true)
-                setEditingShortcut(shortcut)
+                setEditing(true);
+                setEditingShortcut(shortcut);
               }}
             >
               <img src={`shortcut://${shortcut.id}`} />
             </div>
           ))}
+          {/* Toevoegen knop zichtbaar als er minder dan 8 snelkoppelingen zijn */}
           {shortcuts.length < 8 ? (
             <div
               className={styles.shortcut}
@@ -116,10 +126,12 @@ const Shortcuts: React.FC = () => {
           ) : null}
         </div>
       ) : null}
+
+      {/* Modal voor het toevoegen van een nieuwe snelkoppeling */}
       <div
         className={styles.modal}
         data-shown={adding}
-        onClick={e =>
+        onClick={(e) =>
           e.target === e.currentTarget && handleAddShortcutClose()
         }
       >
@@ -133,9 +145,9 @@ const Shortcuts: React.FC = () => {
           <button
             className={styles.uploadImage}
             onClick={async () => {
-              const res = await window.api.uploadShortcutImage('new')
-              if (!res) return
-              uploadImageRef.current!.src = `shortcut://new?${Date.now()}`
+              const res = await window.api.uploadShortcutImage("new");
+              if (!res) return;
+              uploadImageRef.current!.src = `shortcut://new?${Date.now()}`;
             }}
           >
             <img ref={uploadImageRef} src="" alt="" />
@@ -148,19 +160,19 @@ const Shortcuts: React.FC = () => {
             type="text"
             placeholder="Command"
             value={newShortcutCommand}
-            onChange={e => setNewShortcutCommand(e.target.value)}
+            onChange={(e) => setNewShortcutCommand(e.target.value)}
           />
           <div className={styles.buttons}>
-            <button onClick={() => addShortcut(newShortcutCommand)}>
-              Add
-            </button>
+            <button onClick={() => addShortcut(newShortcutCommand)}>Add</button>
           </div>
         </div>
       </div>
+
+      {/* Modal voor het bewerken van een bestaande snelkoppeling */}
       <div
         className={styles.modal}
         data-shown={editing}
-        onClick={e => e.target === e.currentTarget && setEditing(false)}
+        onClick={(e) => e.target === e.currentTarget && setEditing(false)}
       >
         <div className={styles.modalContent}>
           <h1>
@@ -173,10 +185,10 @@ const Shortcuts: React.FC = () => {
             type="text"
             placeholder="Command"
             value={editingShortcut.command}
-            onChange={e =>
+            onChange={(e) =>
               setEditingShortcut({
                 ...editingShortcut,
-                command: e.target.value
+                command: e.target.value,
               })
             }
           />
@@ -194,6 +206,6 @@ const Shortcuts: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
-export default Shortcuts
+  );
+};
+export default Shortcuts;
