@@ -1,34 +1,36 @@
-import React, { createContext, useState } from 'react'
+import React, { createContext, useState } from "react";
 
+// Definieert het type voor de blur-context waarden
 interface AppBlurContextProps {
-  blurred: boolean
-  setBlurred: (blurred: boolean) => void
+  blurred: boolean;
+  setBlurred: (blurred: boolean) => void;
 }
 
+// Maakt een context aan met standaardwaarden
 const AppBlurContext = createContext<AppBlurContextProps>({
   blurred: false,
-  setBlurred: () => {}
-})
+  setBlurred: () => {},
+});
 
+// Type voor de eigenschappen van de contextprovider
 interface AppBlurContextProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-const AppBlurContextProvider = ({
-  children
-}: AppBlurContextProviderProps) => {
-  const [blurred, setBlurred] = useState(false)
+// De provider-component die de blur-context levert aan de componenten binnen deze context
+const AppBlurContextProvider = ({ children }: AppBlurContextProviderProps) => {
+  const [blurred, setBlurred] = useState(false);
 
   return (
     <AppBlurContext.Provider
       value={{
         blurred,
-        setBlurred
+        setBlurred,
       }}
     >
       {children}
     </AppBlurContext.Provider>
-  )
-}
+  );
+};
 
-export { AppBlurContext, AppBlurContextProvider }
+export { AppBlurContext, AppBlurContextProvider };
